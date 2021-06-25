@@ -1167,16 +1167,43 @@ def density_plot(x, y, n_bins_x=200, n_bins_y=200, xlim=None, ylim=None,
         cbar = plt.colorbar(im)
         cbar.ax.set_ylabel('Counts')
 
-def make_image_animation(images, figsize=(5,5), interval=16*5, extent=None, cmap=None,
+def make_image_animation(images, figsize=(5,5), fps=30, extent=None, cmap=None,
                          yticks=None, xticks=None, ylabel=None, xlabel=None):
-    """interval appears to be in ms"""
+    """interval appears to be in ms
+    
+    Parameters
+    ----------
+    images : array
+        array of (time, vdim, hdim, color)
+    figsize : tuple, optional
+        size of figure. Determines aspect ratio of movie.
+    fps : int, optional
+        Description
+    extent : None, optional
+        Description
+    cmap : None, optional
+        Description
+    yticks : None, optional
+        Description
+    xticks : None, optional
+        Description
+    ylabel : None, optional
+        Description
+    xlabel : None, optional
+        Description
+    
+    Returns
+    -------
+    TYPE
+        Description
+    """
     
     # First set up the figure, the axis, and the plot element we want to animate
     fig, ax = plt.subplots(figsize=figsize)
     # Show image & prettify
     # (Allow for multiple overlain images?)
-    im = ax.imshow(images[..., 0], extent=extent, cmap=cmap)
-    imsz = images[..., 0].shape
+    im = ax.imshow(images[0], extent=extent, cmap=cmap)
+    imsz = images[0].shape
     if yticks is not None:
         ax.set_yticks(yticks)
     if xticks is not None:
@@ -1196,11 +1223,11 @@ def make_image_animation(images, figsize=(5,5), interval=16*5, extent=None, cmap
         return (im,)
     # animation function. This is called sequentially
     def animate(i):
-        im.set_array(images[..., i])
+        im.set_array(images[i])
         return (im,)
     # call the animator. blit=True means only re-draw the parts that have changed.
     anim = animation.FuncAnimation(fig, animate, init_func=init,
-                                   frames=images.shape[-1], interval=interval, blit=True)
+                                   frames=images.shape[0], interval=1/fps * 1000, blit=True)
     return anim
 
 #anim.save('test.gif', writer='imagemagick', fps=10, dpi=100, )
