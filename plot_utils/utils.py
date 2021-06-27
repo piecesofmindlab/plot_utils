@@ -1178,24 +1178,24 @@ def make_image_animation(images, figsize=(5,5), fps=30, extent=None, cmap=None,
     figsize : tuple, optional
         size of figure. Determines aspect ratio of movie.
     fps : int, optional
-        Description
+        frames per second of the animation
     extent : None, optional
-        Description
+        extent of the image plotted in matplotlib axis
     cmap : None, optional
-        Description
+        colormap, if not an RGB image
     yticks : None, optional
-        Description
+        Y ticks
     xticks : None, optional
-        Description
+        X ticks
     ylabel : None, optional
-        Description
+        Y axis label
     xlabel : None, optional
-        Description
+        X axis label
     
     Returns
     -------
     TYPE
-        Description
+        matplotlib animation
     """
     
     # First set up the figure, the axis, and the plot element we want to animate
@@ -1231,6 +1231,14 @@ def make_image_animation(images, figsize=(5,5), fps=30, extent=None, cmap=None,
     return anim
 
 #anim.save('test.gif', writer='imagemagick', fps=10, dpi=100, )
+def show_image_animation(images, figsize=(5,5), fps=30, extent=None, cmap=None,
+                         yticks=None, xticks=None, ylabel=None, xlabel=None):
+    """Same as `make_image_animation`, but displays the movie rather 
+    than returning an animation object. See `make_image_animation` 
+    for help!"""
+    anim = make_image_animation(images, figsize=figsize, fps=fps, extent=extent, cmap=cmap,
+                         yticks=yticks, xticks=xticks, ylabel=ylabel, xlabel=xlabel)
+    HTML(anim.to_html5_video())
 
 def _connector(x, y, ht, lw=2, ax=None):
     """draw an upside-down u annotation line. Only works for vertical/horiz lines."""
