@@ -807,10 +807,10 @@ def mosaic(data, ax=None, cmap=plt.cm.gray, vmin=None, vmax=None, nr=None, nc=No
     if ax is None:
         ax = plt.gca()
     if np.ndim(data)==3:
-        y, x, n = data.shape
+        n, y, x = data.shape
         cmkw = dict(cmap=cmap, vmin=vmin, vmax=vmax, aspect=aspect)
     elif np.ndim(data)==4:
-        y, x, _, n = data.shape
+        n, y, x, _ = data.shape
         cmkw = dict(aspect=aspect)
     if nr is None and nc is not None:
         nr = int(n/nc)
@@ -820,9 +820,9 @@ def mosaic(data, ax=None, cmap=plt.cm.gray, vmin=None, vmax=None, nr=None, nc=No
         # For now: assume both are none if nr is not provided
         nr, nc = find_squarish_dimensions(n)
     pos = tile_axes(nr, nc, return_ax=False, **kwargs)
-    for p, d in zip(pos, data.T):
-        ext = _lbwh2lrtb(p)
-        ax.imshow(d.T,  extent=ext, **cmkw)
+    for position, frame in zip(pos, data):
+        ext = _lbwh2lrtb(position)
+        ax.imshow(frame,  extent=ext, **cmkw)
     ax.set_xlim([0, 1])
     ax.set_ylim([0, 1])
 
