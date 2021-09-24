@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits import axes_grid1
 from mpl_toolkits.mplot3d import Axes3D
 
-from matplotlib.colors import colorConverter as cc
-from matplotlib.colors import LinearSegmentedColormap as lsc
+from matplotlib.colors import colorConverter, LinearSegmentedColormap, Normalize
 from matplotlib.collections import LineCollection
 from matplotlib.patches import FancyBboxPatch
 from matplotlib import transforms as mtransforms
@@ -23,7 +22,7 @@ from IPython.display import display, HTML
 
 ### --- helper functions --- ###
 # Convenience
-rgba = cc.to_rgba_array
+rgba = colorConverter.to_rgba_array
 def _sind(ang):
     '''Compute sin w/ degree input
     '''
@@ -45,9 +44,9 @@ def make_colormap(L, name='tmp', n=256, sName=None, do_plot=False):
     If a path is provided in `save`,
     """
     if isinstance(n, (list, tuple)):
-        cmap = lsc.from_list(name, zip(n, L))
+        cmap = LinearSegmentedColormap.from_list(name, zip(n, L))
     else:
-        cmap = lsc.from_list(name, L, n)
+        cmap = LinearSegmentedColormap.from_list(name, L, n)
     # Create color map image:
     mxdpi = 300
     cmapim = np.tile(np.linspace(0, 1, mxdpi*2).reshape(1, mxdpi*2), (.4*mxdpi, 1))
@@ -136,7 +135,7 @@ def make_grad_segs_2pt(p0, p1, npts=20, cmap=None, alph=None):
         alph : alpha values for the two points (alpha values will blend, too)
     """
     if isinstance(cmap, (tuple, list)):
-       cmap = lsc.from_list('tmp', [x for x in rgba(cmap)])
+       cmap = LinearSegmentedColormap.from_list('tmp', [x for x in rgba(cmap)])
     # Segments
     x_1, y_1 = p0
     x_2, y_2 = p1
@@ -1122,9 +1121,8 @@ def unsaturate(cols, sat_factor=0.5):
     rgba : rgba array
     """
     from matplotlib import colors
-    cc = colors.colorConverter
     # Assure colors are in rgba array form
-    cols = cc.to_rgba_array(cols)
+    cols = colorConverter.to_rgba_array(cols)
     c2 = colors.rgb_to_hsv(cols[None, :, :3])
     # Reduce saturation channel by (sat_factor)
     c2[0, :, 1]*=sat_factor
@@ -1532,7 +1530,7 @@ def colormap_2d(
     vmin1=None,
     vmax1=None,
     map_to_uint8=False,
-):
+    ):
     """Map values in two dimensions to color according to a 2D color map image
 
     Parameters
@@ -1545,8 +1543,9 @@ def colormap_2d(
         image of values to use for 2D color map
 
     """
-    norm0 = colors.Normalize(vmin0, vmax0)
-    norm1 = colors.Normalize(vmin1, vmax1)
+
+    norm0 = Normalize(vmin0, vmax0)
+    norm1 = Normalize(vmin1, vmax1)
 
     d0 = np.clip(norm0(data0), 0, 1)
     d1 = np.clip(1 - norm1(data1), 0, 1)
