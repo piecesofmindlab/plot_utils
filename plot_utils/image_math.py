@@ -44,6 +44,24 @@ def low_freq_noise(size, falloff_fn=falloff_fn):
     rr = np.fft.ifft2(np.fft.ifftshift(fr))
     return rr.real
 
+def low_freq_noise_3d(size, falloff_fn=falloff_fn):
+    """Make low-frequency noise"""
+    if isinstance(size, tuple):
+        xd, yd, zd = size
+    else:
+        xd = yd = zd = size
+    x, y, z = np.meshgrid(np.linspace(-1, 1, xd),
+                          np.linspace(-1, 1, yd), 
+                          np.linspace(-1, 1, zd))
+    C = (x**2 + y**2 + z**2)**0.5
+    C[C == 0] = np.min(C[C != 0])
+    r = np.random.rand(yd, xd, zd)
+    f = np.fft.fftshift(np.fft.fft2(r))
+    fr = f * falloff_fn(C)
+    rr = np.fft.ifft2(np.fft.ifftshift(fr))
+    return rr.real
+
+
 
 def grating(size, freq=10, ori=0, phi=0):
     """Make a grating image.
