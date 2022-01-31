@@ -1166,7 +1166,7 @@ def density_plot(x, y, n_bins_x=200, n_bins_y=200, xlim=None, ylim=None,
         cbar.ax.set_ylabel('Counts')
 
 def make_image_animation(images, figsize=(5,5), fps=30, extent=None, cmap=None,
-                         yticks=None, xticks=None, ylabel=None, xlabel=None):
+                         yticks=None, xticks=None, ylabel=None, xlabel=None, **kwargs):
     """interval appears to be in ms
     
     Parameters
@@ -1200,7 +1200,7 @@ def make_image_animation(images, figsize=(5,5), fps=30, extent=None, cmap=None,
     fig, ax = plt.subplots(figsize=figsize)
     # Show image & prettify
     # (Allow for multiple overlain images?)
-    im = ax.imshow(images[0], extent=extent, cmap=cmap)
+    im = ax.imshow(images[0], extent=extent, cmap=cmap, **kwargs)
     imsz = images[0].shape
     if yticks is not None:
         ax.set_yticks(yticks)
