@@ -497,7 +497,7 @@ def plot3(x, y, z, ptype='.', fig=None, ax=None, color=(0., 0., 0.), **kwargs):
     ax.plot3D(x, y, z, ptype, color=color, **kwargs)
 
 # Plotting shapes
-def circle_pos(radius, n_positions, x_center=0, y_center=0, direction='BotCCW'):
+def circle_pos(radius, n_positions, angle_offset=0, x_center=0, y_center=0, direction='CW', duplicate_first=False):
     '''Return points in a circle. 
     
     Parameters
@@ -512,34 +512,30 @@ def circle_pos(radius, n_positions, x_center=0, y_center=0, direction='BotCCW'):
         Defaults to 0
     direction : string 
         Specifies direction of points around circle - 
-            'BotCCW' - start from bottom, go Counter-Clockwise, [default]
+            'CW' - clockwise
+            'CCW' - clockwise
+        To ensure backward compatibility, you can also specify starting position - 
+            'BotCCW' - start from bottom, go Counter-Clockwise, 
             'BotCW' - start from bottom, go Clockwise,
             'TopCCW' - top, Counter-Clockwise
             'TopCW' - top, Clockwise
-        * Note that Right and Left CW or CCW can be obtained
-        by switching x and y
+        Starting with 'Top' is equivalent to angle_offset of 180 
+        and will override angle_offset value if specified.
         
     '''
     if (isinstance(radius, list) and len(radius)==1) or isinstance(radius, (float, int)):
-        radius = np.tile(radius, (n_positions, 1))
-    
-    circ_pos = np.nan * np.ones((n_positions, 2))
-    for ii, tt in enumerate(np.arange(0, 360., 360./n_positions)):
-        circ_pos[ii, 0] = radius[ii]*_sind(tt) + x_center
-        circ_pos[ii, 1] = -radius[ii]*_cosd(tt) + y_center
-        ii += 1
-        
-    if direction.upper()=='BOTCCW':
-        pass # default
-    elif direction.upper()=='BOTCW':
-        # reverse order of Y values
-        circ_pos[:, 1] = circ_pos[::-1, 1]
-    elif direction.upper()=='TOPCCW':
-        # Keep top position (circ_pos[1, :]), and invert the rest of the Y values
-        circ_pos = np.vstack((circ_pos[:1, :], circ_pos[::-1, :]))
-        circ_pos[:, 1] = -(circ_pos[:, 0]-y_center) + y_center
-    elif direction.upper()=='TOPCW':
-        circ_pos[:, 1] = -(circ_pos[:, 1]-y_center) + y_center
+        radius = np.tile(radius, (n_positions+duplicate_first, 1))
+    if direction[:3].upper() == 'TOP':
+        angle_offset=180
+    circ_pos = np.nan * np.ones((n_positions+duplicate_first, 2))
+    angles = np.linspace(0, 360, n_positions+1)
+    if direction[-3:].upper() != 'CCW':
+        angles = angles[::-1]
+    if not duplicate_first:
+        angles = angles[:-1]
+    for i, angle in enumerate(angles):
+        circ_pos[i, 0] = radius[i]*_sind(angle+angle_offset) + x_center
+        circ_pos[i, 1] = -radius[i]*_cosd(angle+angle_offset) + y_center
     return circ_pos
 
 def eegplot(m, x=None, sep=6, scale=None, ax=None, **kwargs):
