@@ -641,6 +641,14 @@ def set_y_axis():
     """set y axis to a particular position (e.g. centered)"""
     pass
 
+
+def set_axis_lines(ax, color='k', lw=1):
+    """Set axis lines to a given color and linewidth"""
+    for side in ['top', 'bottom', 'left', 'right']:
+        ax.spines[side].set_color(color)
+        ax.spines[side].set_linewidth(lw)
+
+
 def open_axes(ax=None):
     """Removes top, right axis borders (makes into an open graph)
 
