@@ -1528,7 +1528,7 @@ def make_dot_overlay_animation(video_data, dot_locations, dot_timestamps=None, v
 def colormap_2d(
     data0,
     data1,
-    image_cmap,
+    cmap,
     vmin0=None,
     vmax0=None,
     vmin1=None,
@@ -1543,23 +1543,34 @@ def colormap_2d(
         First dimension of data to map
     data1 : array (1d)
         Second dimension of data to map
-    image_cmap : array (3d)
+    cmap : array (3d)
         image of values to use for 2D color map
 
     """
+    if isinstance(cmap, str):
+        try:
+            import cortex as cx
+        except:
+            raise ImportError("You must install pycortex to use string names for 2d colormaps")
+        # load pycortex 2D colormap
+        cmapdir = cx.options.config.get('webgl', 'colormaps')
+        colormaps = os.listdir(cmapdir)
+        colormaps = sorted([c for c in colormaps if '.png' in c])
+        colormaps = dict((c[:-4], os.path.join(cmapdir, c)) for c in colormaps)
+        cmap = plt.imread(colormaps[cmap])
 
     norm0 = Normalize(vmin0, vmax0)
     norm1 = Normalize(vmin1, vmax1)
 
     d0 = np.clip(norm0(data0), 0, 1)
     d1 = np.clip(1 - norm1(data1), 0, 1)
-    dim0 = np.round(d0 * (image_cmap.shape[1] - 1))
+    dim0 = np.round(d0 * (cmap.shape[1] - 1))
     # Nans in data seemed to cause weird interaction with conversion to uint32
     dim0 = np.nan_to_num(dim0).astype(np.uint32)
-    dim1 = np.round(d1 * (image_cmap.shape[0] - 1))
+    dim1 = np.round(d1 * (cmap.shape[0] - 1))
     dim1 = np.nan_to_num(dim1).astype(np.uint32)
 
-    colored = image_cmap[dim1.ravel(), dim0.ravel()]
+    colored = cmap[dim1.ravel(), dim0.ravel()]
     # May be useful to map r, g, b, a values between 0 and 255
     # to avoid problems with diff plotting functions...?
     if map_to_uint8:
