@@ -1169,8 +1169,18 @@ def density_plot(x, y, n_bins_x=200, n_bins_y=200, xlim=None, ylim=None,
         cbar = plt.colorbar(im)
         cbar.ax.set_ylabel('Counts')
 
-def make_image_animation(images, figsize=(5,5), fps=30, extent=None, cmap=None,
-                         yticks=None, xticks=None, ylabel=None, xlabel=None, **kwargs):
+def make_image_animation(images, 
+        overlay=None,
+        figsize=(5,5),
+        fps=30,
+        extent=None,
+        cmap=None,
+        yticks=None,
+        xticks=None,
+        ylabel=None,
+        xlabel=None,
+        overlay_kwargs=None,
+        **kwargs):
     """interval appears to be in ms
     
     Parameters
@@ -1206,6 +1216,10 @@ def make_image_animation(images, figsize=(5,5), fps=30, extent=None, cmap=None,
     # (Allow for multiple overlain images?)
     im = ax.imshow(images[0], extent=extent, cmap=cmap, **kwargs)
     imsz = images[0].shape
+    if overlay is not None:
+        if overlay_kwargs is None:
+            overlay_kwargs = {}
+        im_o = ax.imshow(overlay[0], extent=extent, **overlay_kwargs)
     if yticks is not None:
         ax.set_yticks(yticks)
     if xticks is not None:
@@ -1222,11 +1236,19 @@ def make_image_animation(images, figsize=(5,5), fps=30, extent=None, cmap=None,
     # initialization function: plot the background of each frame
     def init():
         im.set_array(np.zeros(imsz))
-        return (im,)
+        if overlay is not None:
+            im_o.set_array(np.zeros(overlay[0].shape))
+            return (im, im_o)
+        else:
+            return (im,)
     # animation function. This is called sequentially
     def animate(i):
         im.set_array(images[i])
-        return (im,)
+        if overlay is not None:
+            im_o.set_array(overlay[i])
+            return (im, im_o)
+        else:
+            return (im,)
     # call the animator. blit=True means only re-draw the parts that have changed.
     anim = animation.FuncAnimation(fig, animate, init_func=init,
                                    frames=images.shape[0], interval=1/fps * 1000, blit=True)
