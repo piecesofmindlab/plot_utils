@@ -1285,7 +1285,7 @@ def make_subplot_image_animation(image_stacks, data=None, n_rows=None, n_cols=No
         matplotlib animation
     """
     if n_rows is None:
-        n_rows, n_cols = plot_utils.find_squarish_dimensions(len(image_stacks))
+        n_rows, n_cols = find_squarish_dimensions(len(image_stacks))
     if data is None:
         data = [None] * len(image_stacks)
     n_frames = np.max([len(x) for x in image_stacks])
