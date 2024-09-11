@@ -1673,4 +1673,5 @@ def colormap_2d(
     # to avoid problems with diff plotting functions...?
     if map_to_uint8:
         colored = (colored * 255).astype(np.uint8)
+    colored = colored.reshape(data0.shape + (4,))
     return colored
