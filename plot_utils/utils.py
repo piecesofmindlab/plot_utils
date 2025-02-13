@@ -624,7 +624,7 @@ def prep_inkscape_svg(h):
         f = h.get_figure()
     else: # type(h) is matplotlib.figure.Figure:
         A = h.get_axes()
-        f = hThe 
+        f = h
     for ax in A:
         ToFix = [ax.title, ax.xaxis.label, ax.yaxis.label] + ax.get_xticklabels() + ax.get_yticklabels() + [t for t in ax.get_children() if isinstance(t, matplotlib.text.Text)]
         L = ax.get_legend()
