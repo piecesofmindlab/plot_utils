@@ -4,8 +4,11 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from numpy.core.fromnumeric import _clip_dispatcher
 from scipy.signal import convolve2d as conv2
-import skimage
-import skimage.filters
+try:
+    import skimage
+    import skimage.filters
+except:
+    pass
 
 def normalize(x, vmin=None, vmax=None, clip=True):
     if vmin is None:
@@ -144,6 +147,11 @@ def make_ori_noise(size, oris=4, sf_range=None, sm=7, noise_frames=24, phi=None,
         list (of length (n)) chooses specific speeds for each orientation
 
     """
+    try:
+        import skimage.filters
+    except ModuleNotFoundError as ee:
+        print('You need to install scikit-image to make low-frequency noise!')
+        raise(ee)
     # Input handling
     # Orientations
     if isinstance(oris, (tuple, list, np.ndarray)):
