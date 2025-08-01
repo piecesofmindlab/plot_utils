@@ -1675,3 +1675,35 @@ def colormap_2d(
         colored = (colored * 255).astype(np.uint8)
     colored = colored.reshape(data0.shape + (4,))
     return colored
+
+def quiver(x, y, u, v, ax=None, cmap=None, 
+            angles='xy',
+            scale_units='xy',
+            units='xy',
+            scale=0.5,
+            width=3,
+            headwidth=2.25,
+            headlength=3,
+            headaxislength=3,
+            **kwargs
+            ):
+    """Wrapper for matplotlib quiver function with more sensible defaults
+        
+    """
+    if ax is None:
+        fig, ax = plt.subplots()
+    h_q = ax.quiver(x, y, u, v, 
+            np.ones_like(dx)*1, 
+            clim=(0, 1),
+            cmap=cmap,
+            angles=angles,
+            scale_units=scale_units,
+            units=units,
+            scale=scale,
+            width=width,
+            headwidth=headwidth,
+            headlength=headlength,
+            headaxislength=headaxislength,
+            **kwargs
+            )
+    return h_q
