@@ -1605,9 +1605,9 @@ def make_dot_overlay_animation(video_data, dot_locations, dot_timestamps=None, v
         t_i, vframe_i = np.nonzero(np.abs(tdif) < (mean_video_frame_time / 2))
         # Downsample dot locations
         vframes = np.unique(vframe_i)
-        print(vframes)
+        #print(vframes)
         n_dots_ds = len(vframes)
-        print(n_dots_ds)
+        #print(n_dots_ds)
         dot_locations_ds = np.hstack([np.median(dot_locations[:, t_i[vframe_i==j]], axis=1)[:, None, :] for j in vframes])
         #print(dot_locations_ds.shape)
     else:
@@ -1622,7 +1622,7 @@ def make_dot_overlay_animation(video_data, dot_locations, dot_timestamps=None, v
     #print(dot_markers)
     # First set up the figure, the axis, and the plot element we want to animate
     fig, ax = plt.subplots(figsize=figsize)
-    im = ax.imshow(video_data[0], extent=extent, cmap='gray', aspect='auto')
+    im = ax.imshow(video_data[0], extent=extent, cmap='gray', aspect='auto', **kwargs)
     ax.set_xticks([])
     ax.set_yticks([])
     dots = []
@@ -1656,6 +1656,114 @@ def make_dot_overlay_animation(video_data, dot_locations, dot_timestamps=None, v
                 func=update, 
                 init_func=init,
                 frames=n_frames, 
+                interval=interval, 
+                blit=True)
+    return anim
+
+
+def make_dot_animation(dot_locations, dot_timestamps=None, dot_widths=None,
+                       dot_colors=None, dot_labels=None, dot_markers=None, 
+                       figsize=None, fps=60, xmin=0, xmax=1, ymin=0, ymax=1,
+                         **kwargs):
+    """Make an animated plot of dots moving around on a video image
+    
+    Useful for showing estimated gaze positions, detected marker positions, etc. Multiple dots
+    indicating multiple different quantites, each with different plot (color, marker type, width)
+    can be plotted with this function.
+
+    Parameters
+    ----------
+    video_data : array
+        stack of video_data, (time, vdim, hdim, [c]), in a format showable by plt.imshow()
+    dot_locations : array
+        [n_dots, n_frames, xy]: locations of dots to plot, either in normalized (0-1 for 
+        both x and y) coordinates or in pixel coordinates (with pixel dimensions matching 
+        the size of the video)   
+    dot_timestamps : array
+        [n_dots, n_dot_frames] timestamps for dots to plot; optional if a dot location is 
+        specified for each frame. However, if `dot_timestamps` do not match 
+        `video_timestamps`, dot_locations are resampled (simple block average) to match 
+        with video frames using these timestamps.
+    video_timestamps : array
+        [n_frames] timestamps for video frames; optional, see `dot_timestamps`
+    dot_widths : scalar or list
+        size(s) for dots to plot
+    dot_colors : matplotlib colorspec (e.g. 'r' or [1, 0, 0]) or list of colorspecs
+        colors of dots to plot. Only allows one color across time for each dot (for now). 
+    dot_labels : string or list of strings
+        label per dot (for legend) NOT YET IMPLEMENTED.
+    dot_markers : string or list of strings
+        marker type for each dot
+    figsize : tuple
+        Size of figure
+    fps : scalar
+        fps for resulting animation
+
+    Notes
+    -----
+    Good tutorial, fancy extras: https://alexgude.com/blog/matplotlib-blitting-supernova/
+    """
+    from functools import partial
+    def prep_input(x, n):
+        if not isinstance(x, (list, tuple)):
+            x = [x]
+        if len(x) == 1:
+            x = x * n
+        return x
+    # Inputs
+    if np.ndim(dot_locations) == 2:
+        dot_locations = dot_locations[np.newaxis, :]
+    if dot_markers is None:
+        dot_markers = 'o'
+        
+    # Shape
+    extent = [xmin, xmax, ymin, ymax]
+    # interval is milliseconds; convert fps to milliseconds per frame
+    interval = 1000 / fps
+    # Setup
+    x = np.abs(xmax - xmin)
+    y = np.abs(ymax - ymin)
+    aspect_ratio = x / y
+    if figsize is None:
+        figsize = (5 * aspect_ratio, 5)
+    # Plotting args
+    n_dots, n_dot_frames, _ = dot_locations.shape
+    dot_colors = prep_input(dot_colors, n_dots)
+    dot_widths = prep_input(dot_widths, n_dots)
+    dot_markers = prep_input(dot_markers, n_dots)
+    dot_labels = prep_input(dot_labels, n_dots)
+    #print(dot_markers)
+    # First set up the figure, the axis, and the plot element we want to animate
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.set_xlim([xmin, xmax])
+    ax.set_ylim([ymin, ymax])
+    #ax.set_xticks([])
+    #ax.set_yticks([])
+    dots = []
+    for dc, dw, dm, dl in zip(dot_colors, dot_widths, dot_markers, dot_labels):
+        tmp = plt.scatter(0.5, 0.5, s=dw, c=dc, marker=dm, label=dl)
+        dots.append(tmp)
+    artists = tuple(dots)
+    plt.close(fig.number)
+    # initialization function: plot the background of each frame
+    def init_func(fig, ax, artists):
+        for d in dots:
+            d.set_offsets([0.5, 0.5])
+        return artists 
+    # animation function. This is called sequentially
+    def update_func(i, artists, dot_locations):
+        # Also needs attention if different timecourses for different dots
+        for j, artist in enumerate(artists):
+            # may end up being: if i in vframes[j]:
+            _ = artist.set_offsets(dot_locations[j, i])
+        return artists
+    init = partial(init_func, fig=fig, ax=ax, artists=artists)
+    update = partial(update_func, artists=artists, dot_locations=dot_locations)
+    # call the animator. blit=True means only re-draw the parts that have changed.
+    anim = animation.FuncAnimation(fig, 
+                func=update, 
+                init_func=init,
+                frames=n_dot_frames, 
                 interval=interval, 
                 blit=True)
     return anim
