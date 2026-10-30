@@ -2,7 +2,6 @@ import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
-from numpy.core.fromnumeric import _clip_dispatcher
 from scipy.signal import convolve2d as conv2
 try:
     import skimage
